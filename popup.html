@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>FanOrbit 控制面板</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>FanOrbit</header>
+  <p class="hint">把你放在中心，粉丝按互动频率由内向外环绕。</p>
+
+  <label>
+    <span>X 用户名</span>
+    <input id="username" type="text" placeholder="例如 Alamanes" spellcheck="false" />
+  </label>
+
+  <label>
+    <span>数量上限（留空 = 全部）</span>
+    <input id="maxCount" type="number" min="1" placeholder="全部" />
+  </label>
+
+  <label>
+    <span>头像大小（px）</span>
+    <input id="avatarSize" type="number" min="40" max="300" value="96" />
+  </label>
+
+  <label class="row">
+    <span>背景颜色</span>
+    <input id="bgColor" type="color" value="#f5f3ff" />
+  </label>
+
+  <label>
+    <span>标题文字</span>
+    <input id="titleText" type="text" placeholder="恭喜我 {n} 位粉丝" />
+  </label>
+
+  <label>
+    <span>互动扫描深度</span>
+    <select id="scanMode">
+      <option value="fast">快速（约几十秒）</option>
+      <option value="deep">深入（更慢，覆盖更久）</option>
+    </select>
+  </label>
+
+  <button id="startBtn">开始制作</button>
+  <button id="genBtn" class="secondary">打开生成页面</button>
+
+  <div class="progressWrap">
+    <div class="progressFill" id="fill"></div>
+  </div>
+  <div id="status">待开始</div>
+  <div id="meta" class="meta"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

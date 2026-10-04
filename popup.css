@@ -1,0 +1,96 @@
+body {
+  width: 320px;
+  margin: 0;
+  padding: 14px 16px 16px;
+  font: 13px/1.5 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: #1e2033;
+  background: #faf9ff;
+}
+
+header {
+  font-size: 17px;
+  font-weight: 700;
+  color: #6d28d9;
+}
+
+.hint {
+  margin: 2px 0 10px;
+  color: #6b6f8d;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+label > span {
+  display: block;
+  margin-bottom: 2px;
+  color: #3d4160;
+}
+
+input,
+select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid #d6d3e8;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1e2033;
+  font: inherit;
+}
+
+input[type="color"] {
+  padding: 2px;
+  height: 28px;
+}
+
+button {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 8px;
+  background: #7c3aed;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.progressWrap {
+  height: 6px;
+  margin-top: 12px;
+  border-radius: 3px;
+  background: #e5e1f5;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: 0;
+  background: #7c3aed;
+  transition: width 0.3s;
+}
+
+#status {
+  margin-top: 6px;
+  color: #3d4160;
+}
+
+#meta {
+  margin-top: 2px;
+  color: #8a8fb0;
+  font-size: 12px;
+}

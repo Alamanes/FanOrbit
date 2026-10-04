@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>FanOrbit 生成器</title>
+  <style>
+    body {
+      font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      color: #1e2033;
+      background: #faf9ff;
+    }
+    h1 { color: #6d28d9; font-size: 20px; }
+    #meta { color: #6b6f8d; margin: 8px 0; }
+    #preview { display: none; max-width: 100%; border-radius: 12px; box-shadow: 0 8px 30px rgba(124,58,237,.18); }
+    button {
+      margin-right: 8px; padding: 8px 18px; border: none; border-radius: 8px;
+      background: #7c3aed; color: #fff; font: inherit; font-weight: 600; cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: default; }
+    .progressWrap { height: 8px; width: 420px; max-width: 100%; border-radius: 4px;
+      background: #e5e1f5; overflow: hidden; margin: 12px 0; }
+    .progressFill { height: 100%; width: 0; background: #7c3aed; transition: width .3s; }
+  </style>
+</head>
+<body>
+  <h1>FanOrbit — 生成专属粉丝同心环头像墙</h1>
+  <div class="progressWrap"><div class="progressFill" id="fill"></div></div>
+  <div id="status">正在读取数据…</div>
+  <div id="meta"></div>
+  <div style="margin: 16px 0;">
+    <img id="preview" alt="FanOrbit 头像墙预览" />
+  </div>
+  <button id="saveBtn">保存 JPG</button>
+  <button id="againBtn">重新生成</button>
+
+  <script src="db.js"></script>
+  <script src="downloader.js"></script>
+  <script src="generator.js"></script>
+</body>
+</html>

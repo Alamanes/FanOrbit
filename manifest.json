@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "FanOrbit",
+  "version": "1.0.0",
+  "description": "将你的头像置于中心，粉丝按互动频率由内向外环绕生成同心环头像墙。Fan collection method referenced from qiujiu-dev/XAvatarWall; interaction scoring method inspired by acnekot/NekoCircle.",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "https://x.com/*",
+    "https://twitter.com/*",
+    "https://*.twimg.com/*",
+    "https://search.yahoo.co.jp/*",
+    "https://api.fxtwitter.com/*"
+  ],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FanOrbit",
+    "default_icon": {
+      "128": "assets/icon-128.png",
+      "48": "assets/icon-48.png",
+      "16": "assets/icon-16.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://x.com/*", "https://twitter.com/*"],
+      "js": ["collector.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
