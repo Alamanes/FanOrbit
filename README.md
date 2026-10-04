@@ -9,7 +9,7 @@
 
 ---
 
-**English**: FanOrbit places your own avatar at the center and orbits your fans around it as concentric rings, ordered by interaction frequency from the innermost ring outward; fans without any interaction data are placed randomly among the outer rings, with the three inner rings enlarged for the core fans. Fan collection approach referenced from [qiujiu-dev/XAvatarWall](https://github.com/qiujiu-dev/XAvatarWall); interaction scoring scheme inspired by [acnekot/NekoCircle](https://github.com/acnekot/NekoCircle) (reimplemented, no code copied: NekoCircle is AGPL-3.0).
+**English**: FanOrbit places your own avatar at the center and orbits your fans around it as concentric rings, ordered by interaction frequency from the innermost ring outward (optional rainbow color sort by avatar hue); fans without any interaction data are placed randomly among the outer rings, with the three inner rings enlarged for the core fans and extra spacing around the center avatar. Fan collection approach referenced from [qiujiu-dev/XAvatarWall](https://github.com/qiujiu-dev/XAvatarWall); interaction scoring scheme inspired by [acnekot/NekoCircle](https://github.com/acnekot/NekoCircle) (reimplemented, no code copied: NekoCircle is AGPL-3.0).
 
 ## 安装 Installation
 
@@ -20,7 +20,7 @@
 ## 使用 Usage
 
 1. 点击工具栏 FanOrbit 图标打开控制面板。
-2. 输入 X 用户名（不带 `@`），选择数量上限、头像大小、背景色、标题与扫描深度。
+2. 输入 X 用户名（不带 `@`），选择数量上限、头像大小、背景色、标题与扫描深度，并可勾选「颜色排序（彩虹环）」：开启后按头像主色的色相从红到紫环绕排布，形成彩虹色环（默认关闭时按互动频率排序）。
 3. 「开始制作」：
    - 阶段 1 — 扩展自动打开 `https://x.com/<用户名>/followers`，自动滚动采集粉丝列表（含断点续采）。
    - 阶段 2 — 后台同时从 Yahoo! 实时搜索与 fxtwitter 抓取公开推文互动（回复 / 引用 / 提及 / 转发），按用户名合并去重并评分。
@@ -28,9 +28,10 @@
 
 ## 布局规则 Layout rules
 
-- 中心：你自己的头像（自动通过 fxtwitter 获取，获取失败时使用占位徽标）。
+- 中心：你自己的头像（自动通过 fxtwitter 获取，获取失败时使用占位徽标）；中心头像与第一环之间保留额外间距，避免紧贴。
 - 内环 → 外环：互动分从高到低。
 - 没有任何互动记录的粉丝：随机散布在外侧各环。
+- 「颜色排序」开启时，所有头像按主色色相排序后依槽位衔接，形成跨环的彩虹渐变；灰度头像排到最外侧。
 
 ## 评分方法 Scoring
 

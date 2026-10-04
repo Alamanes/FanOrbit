@@ -8,7 +8,8 @@
     bgColor: '#f5f3ff',
     titleText: '',
     scanMode: 'fast',
-    dualSize: true
+    dualSize: true,
+    colorSort: false
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -21,6 +22,7 @@
     $('titleText').value = c.titleText || '';
     $('scanMode').value = c.scanMode || 'fast';
     $('dualSize').checked = c.dualSize !== false;
+    $('colorSort').checked = c.colorSort === true;
 
     $('startBtn').addEventListener('click', start);
     $('genBtn').addEventListener('click', openGen);
@@ -40,7 +42,8 @@
       bgColor: $('bgColor').value || '#f5f3ff',
       titleText: $('titleText').value.trim(),
       scanMode: $('scanMode').value,
-      dualSize: $('dualSize').checked
+      dualSize: $('dualSize').checked,
+      colorSort: $('colorSort').checked
     };
     await chrome.storage.local.set({ config });
     return config;

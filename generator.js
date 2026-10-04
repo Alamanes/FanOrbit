@@ -88,7 +88,7 @@
       setStatus('没有可用的头像数据，请先开始粉丝采集。');
       return;
     }
-    const blob = await drawOrbitFromItems(ordered, selfBlob, size, bgColor, titleRaw.replace('{n}', String(ordered.length)), `FanOrbit · X@${fansData.username || ''}`, config.dualSize !== false);
+    const blob = await drawOrbitFromItems(ordered, selfBlob, size, bgColor, titleRaw.replace('{n}', String(ordered.length)), `FanOrbit · X@${fansData.username || ''}`, config.dualSize !== false, config.colorSort === true);
     if (!blob) {
       setStatus('图片生成失败。');
       return;
@@ -101,7 +101,9 @@
     $('saveBtn').disabled = false;
     $('againBtn').disabled = false;
     const scored = ranked.length;
-    $('meta').textContent = `${ordered.length} 位粉丝 · 互动排序 ${scored} 位 · 随机 ${ordered.length - scored} 位 · ${size}px · JPEG 95%`;
+    $('meta').textContent = config.colorSort === true
+      ? `${ordered.length} 位粉丝 · 颜色排序（彩虹环） · ${size}px · JPEG 95%`
+      : `${ordered.length} 位粉丝 · 互动排序 ${scored} 位 · 随机 ${ordered.length - scored} 位 · ${size}px · JPEG 95%`;
     setProgress(1);
     setStatus('生成完成');
 
@@ -133,15 +135,44 @@
     return arr;
   }
 
-  async function drawOrbitFromItems(items, selfBlob, size, bgColor, title, footer, dualSize) {
+  async function drawOrbitFromItems(items, selfBlob, size, bgColor, title, footer, dualSize, colorSort) {
     const count = items.length;
     if (!count) return null;
+
+    const bitmaps = [];
+    for (const item of items) {
+      try {
+        bitmaps.push(await createImageBitmap(item.blob));
+      } catch (e) {
+        bitmaps.push(null);
+      }
+    }
+
+    // Pair every item with its bitmap before any reordering so both stay
+    // aligned. With colorSort the hue order forms a smooth rainbow across
+    // slots; low-detail hues (grayscale or unreadable pixels) go last.
+    let entries = items.map((item, i) => ({ item, bitmap: bitmaps[i], hue: null }));
+    if (colorSort) {
+      for (const entry of entries) {
+        if (!entry.bitmap) continue;
+        entry.hue = bitmapHue(entry.bitmap);
+      }
+      entries = entries
+        .map((e, i) => ({ e, i }))
+        .sort((a, b) => (a.e.hue ?? 361) - (b.e.hue ?? 361) || a.i - b.i)
+        .map((x) => x.e);
+    }
 
     const gap = Math.max(6, Math.round(size * 0.12));
     // Two fixed tiers, not a gradual drain: the innermost BIG_RINGS rings
     // use bigSize, every ring after that stays at the plain avatar size.
     const BIG_RINGS = 3;
     const bigSize = dualSize ? Math.round(size * 1.4) : size;
+    // Extra margin between the center avatar and the first ring: the
+    // decorative stroke below eats into the raw gap, without a margin the
+    // nearest fans visually touch the purple center ring.
+    const centerGap = Math.round(size * 0.4);
+    const decorR = Math.round(bigSize * 0.06);
     const centerR = Math.round(bigSize * 1.75);
     const pad = Math.round(size * 0.7);
 
@@ -154,7 +185,7 @@
     while (available < count && k < 200) {
       const s = dualSize && k < BIG_RINGS ? bigSize : size;
       const r = k === 0
-        ? centerR + s / 2 + gap
+        ? centerR + decorR + centerGap + s / 2 + gap
         : rings[k - 1].radius + (rings[k - 1].size + s) / 2 + gap;
       const cap = Math.max(8, Math.floor((2 * Math.PI * r) / (s + gap)));
       rings.push({ radius: r, size: s, cap });
@@ -194,18 +225,9 @@
       }
     }
 
-    // Draw fans: items already ordered innermost-first.
-    const bitmaps = [];
-    for (const item of items) {
-      try {
-        bitmaps.push(await createImageBitmap(item.blob));
-      } catch (e) {
-        bitmaps.push(null);
-      }
-    }
-
-    for (let i = 0; i < Math.min(items.length, positions.length); i++) {
-      const bmp = bitmaps[i];
+    // Draw fans: slots are ring-ordered, entries carry the final order.
+    for (let i = 0; i < Math.min(entries.length, positions.length); i++) {
+      const bmp = entries[i].bitmap;
       const pos = positions[i];
       if (!bmp) continue;
 
@@ -231,7 +253,7 @@
     // Center avatar with a decorative double ring.
     const selfRadius = centerR;
     ctx.beginPath();
-    ctx.arc(cx, cy, selfRadius + Math.round(bigSize * 0.06), 0, Math.PI * 2);
+    ctx.arc(cx, cy, selfRadius + decorR, 0, Math.PI * 2);
     ctx.fillStyle = '#7c3aed';
     ctx.fill();
     if (selfBlob) {
@@ -268,6 +290,45 @@
     return new Promise((resolve) => {
       canvas.toBlob(resolve, 'image/jpeg', 0.95);
     });
+  }
+
+  // Average color of a bitmap as an HSL hue in [0, 360). Nearly
+  // unfollowable pixels (fully faded or grayscale) return a sentinel past
+  // the hue range so they sort to the outer end of the rainbow.
+  function bitmapHue(bitmap) {
+    const n = 24;
+    const box = document.createElement('canvas');
+    box.width = n;
+    box.height = n;
+    const g = box.getContext('2d', { willReadFrequently: true });
+    g.drawImage(bitmap, 0, 0, n, n);
+    let data;
+    try {
+      data = g.getImageData(0, 0, n, n).data;
+    } catch (e) {
+      return null;
+    }
+    let r = 0, gr = 0, b = 0, a = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3] / 255;
+      if (alpha < 0.5) continue;
+      r += data[i] * alpha;
+      gr += data[i + 1] * alpha;
+      b += data[i + 2] * alpha;
+      a += alpha;
+    }
+    if (!a) return null;
+    return rgbToHue(r / a, gr / a, b / a);
+  }
+
+  function rgbToHue(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    if (d < 14) return 361;
+    if (max === r) return ((g - b) / d % 6 + 6) % 6 * 60;
+    if (max === g) return ((b - r) / d + 2) * 60;
+    return ((r - g) / d + 4) * 60;
   }
 
   function drawPlaceholder(ctx, cx, cy, r) {
