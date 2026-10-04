@@ -52,6 +52,7 @@
 
     const target = config.username;
     const maxCount = normalizeMax(config.maxCount);
+    const expectedCount = normalizeExpectedCount(config.expectedFollowers);
 
     // Resume previously collected data so a page refresh continues the task.
     const seen = new Map();
@@ -65,19 +66,24 @@
     await waitForCells(15000);
 
     let noNewStreak = 0;
-    const MAX_NO_NEW = 6;
+    const MAX_NO_NEW = maxCount === 'all' ? 30 : 6;
+    let incomplete = false;
 
     while (running && !stopRequested) {
       const before = seen.size;
       scanPage(seen);
-      await persist(target, seen);
+      await persist(target, seen, maxCount === 'all' ? expectedCount : maxCount);
       const after = seen.size;
 
       if (maxCount !== 'all' && seen.size >= maxCount) break;
+      if (maxCount === 'all' && expectedCount !== null && seen.size >= expectedCount) break;
 
       if (after === before) {
         noNewStreak++;
-        if (noNewStreak >= MAX_NO_NEW) break;
+        if (noNewStreak >= MAX_NO_NEW) {
+          incomplete = maxCount === 'all' && expectedCount !== null && seen.size < expectedCount;
+          break;
+        }
       } else {
         noNewStreak = 0;
       }
@@ -95,12 +101,18 @@
       fansData: { username: target, fans, total: fans.length, collectedAt: Date.now() },
       progress: {
         current: fans.length,
-        max: maxCount === 'all' ? fans.length : maxCount,
-        message: stopRequested ? '已停止，粉丝部分可用' : fans.length ? '粉丝采集完成' : '未采集到粉丝'
+        max: maxCount === 'all'
+          ? expectedCount === null ? fans.length : expectedCount
+          : maxCount,
+        message: stopRequested
+          ? '已停止，粉丝部分可用'
+          : incomplete
+            ? `粉丝采集未完成：已采集 ${fans.length} / ${expectedCount} 位`
+            : fans.length ? '粉丝采集完成' : '未采集到粉丝'
       }
     });
 
-    if (fans.length) {
+    if (fans.length && !incomplete) {
       try {
         await chrome.runtime.sendMessage({
           type: 'COLLECT_DONE',
@@ -129,9 +141,30 @@
   }
 
   function getCells() {
-    const userCells = document.querySelectorAll('[data-testid="UserCell"]');
-    if (userCells.length) return userCells;
-    return document.querySelectorAll('[data-testid="cellInnerDiv"]');
+    const root = getFollowerListRoot();
+    if (!root) return [];
+
+    return root.querySelectorAll('[data-testid="UserCell"]');
+  }
+
+  function getFollowerListRoot() {
+    const primary = document.querySelector('[data-testid="primaryColumn"]') ||
+      document.querySelector('main,[role="main"]');
+    if (!primary) return null;
+
+    const followerTimeline = primary.querySelector(
+      '[aria-label*="Timeline" i][aria-label*="follower" i]'
+    );
+    if (followerTimeline) return followerTimeline;
+
+    const regions = Array.from(primary.querySelectorAll(
+      'section[role="region"],[aria-label*="Timeline" i]'
+    ));
+    const regionWithCells = regions
+      .filter((region) => region.querySelector('[data-testid="UserCell"]'))
+      .sort((a, b) => b.querySelectorAll('[data-testid="UserCell"]').length -
+        a.querySelectorAll('[data-testid="UserCell"]').length)[0];
+    return regionWithCells || null;
   }
 
   function extractUsername(cell) {
@@ -189,11 +222,15 @@
     }
   }
 
-  async function persist(target, seen) {
+  async function persist(target, seen, expectedCount = null) {
     const fans = Array.from(seen.values()).sort((a, b) => a.index - b.index);
     await chrome.storage.local.set({
       fansData: { username: target, fans, total: fans.length, collectedAt: Date.now() },
-      progress: { current: fans.length, max: 0, message: `粉丝采集中 ${fans.length} 位…` }
+      progress: {
+        current: fans.length,
+        max: expectedCount === null ? 0 : expectedCount,
+        message: `粉丝采集中 ${fans.length} 位…`
+      }
     });
   }
 
@@ -201,6 +238,11 @@
     if (maxCount === 'all' || maxCount == null) return 'all';
     const n = parseInt(maxCount, 10);
     return isNaN(n) || n < 1 ? 'all' : n;
+  }
+
+  function normalizeExpectedCount(value) {
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null;
   }
 
   function sleep(ms) {
