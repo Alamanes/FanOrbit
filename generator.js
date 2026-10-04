@@ -138,11 +138,10 @@
     if (!count) return null;
 
     const gap = Math.max(6, Math.round(size * 0.12));
-    const centerR = Math.round(size * 1.15);
+    const centerR = Math.round(size * 1.75);
     const ringR0 = centerR + size / 2 + gap;
     const step = size + gap;
     const pad = Math.round(size * 0.7);
-    const titleH = Math.round(size * 0.6);
 
     // Compute ring radii and capacities until all fans have a slot.
     const rings = [];
@@ -158,6 +157,10 @@
 
     const maxR = rings[rings.length - 1].radius + size / 2;
     const W = Math.ceil(2 * maxR + pad * 2);
+    // Title band scales with the canvas width, not the avatar size — with
+    // hundreds of fans the canvas gets very wide and a fixed band would
+    // make the title unreadably small.
+    const titleH = Math.max(Math.round(size * 0.6), Math.round(W * 0.045));
     const H = Math.ceil(W + titleH);
 
     const canvas = document.createElement('canvas');
@@ -242,13 +245,13 @@
 
     // Title + footer.
     const textColor = contrastColor(bgColor);
-    const titleFont = Math.max(24, Math.round(size * 0.26));
+    const titleFont = Math.max(28, Math.round(W * 0.02));
     ctx.fillStyle = '#6d28d9';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = `700 ${titleFont}px -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif`;
     ctx.fillText(title, cx, titleH / 2 + titleFont / 2);
-    const footFont = Math.max(14, Math.round(size * 0.16));
+    const footFont = Math.max(18, Math.round(W * 0.012));
     ctx.fillStyle = textColor;
     ctx.font = `${footFont}px -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif`;
     ctx.fillText(footer, cx, H - pad / 2);
