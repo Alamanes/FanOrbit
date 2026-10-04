@@ -88,7 +88,7 @@
       setStatus('没有可用的头像数据，请先开始粉丝采集。');
       return;
     }
-    const blob = await drawOrbitFromItems(ordered, selfBlob, size, bgColor, titleRaw.replace('{n}', String(ordered.length)), `FanOrbit · X@${fansData.username || ''}`);
+    const blob = await drawOrbitFromItems(ordered, selfBlob, size, bgColor, titleRaw.replace('{n}', String(ordered.length)), `FanOrbit · X@${fansData.username || ''}`, config.dualSize !== false);
     if (!blob) {
       setStatus('图片生成失败。');
       return;
@@ -133,29 +133,37 @@
     return arr;
   }
 
-  async function drawOrbitFromItems(items, selfBlob, size, bgColor, title, footer) {
+  async function drawOrbitFromItems(items, selfBlob, size, bgColor, title, footer, dualSize) {
     const count = items.length;
     if (!count) return null;
 
     const gap = Math.max(6, Math.round(size * 0.12));
-    const centerR = Math.round(size * 1.75);
-    const ringR0 = centerR + size / 2 + gap;
-    const step = size + gap;
+    // Two fixed tiers, not a gradual drain: the innermost BIG_RINGS rings
+    // use bigSize, every ring after that stays at the plain avatar size.
+    const BIG_RINGS = 3;
+    const bigSize = dualSize ? Math.round(size * 1.4) : size;
+    const centerR = Math.round(bigSize * 1.75);
     const pad = Math.round(size * 0.7);
 
-    // Compute ring radii and capacities until all fans have a slot.
+    // Compute ring radii and capacities until all fans have a slot. Ring
+    // radius r(k) is derived iteratively from the previous ring's own
+    // diameter, so tier switches keep a constant gap everywhere.
     const rings = [];
     let available = 0;
     let k = 0;
-    while (available < count && k < 40) {
-      const r = ringR0 + k * step;
-      const cap = Math.max(8, Math.floor((2 * Math.PI * r) / step));
-      rings.push({ radius: r, cap });
+    while (available < count && k < 200) {
+      const s = dualSize && k < BIG_RINGS ? bigSize : size;
+      const r = k === 0
+        ? centerR + s / 2 + gap
+        : rings[k - 1].radius + (rings[k - 1].size + s) / 2 + gap;
+      const cap = Math.max(8, Math.floor((2 * Math.PI * r) / (s + gap)));
+      rings.push({ radius: r, size: s, cap });
       available += cap;
       k++;
     }
 
-    const maxR = rings[rings.length - 1].radius + size / 2;
+    const last = rings[rings.length - 1];
+    const maxR = last.radius + last.size / 2;
     const W = Math.ceil(2 * maxR + pad * 2);
     // Title band scales with the canvas width, not the avatar size — with
     // hundreds of fans the canvas gets very wide and a fixed band would
@@ -174,14 +182,15 @@
     const cx = W / 2;
     const cy = titleH + maxR + pad / 2;
 
-    // Slot ordering: ring by ring; fan index i goes to slot i.
+    // Slot ordering: ring by ring; fan index i goes to slot i. Each slot
+    // carries its own tier size.
     const positions = [];
     for (const ring of rings) {
       const rotation = Math.random() * Math.PI * 2;
       const angleStep = (Math.PI * 2) / ring.cap;
       for (let i = 0; i < ring.cap; i++) {
         const angle = rotation + i * angleStep;
-        positions.push({ x: cx + Math.cos(angle) * ring.radius, y: cy + Math.sin(angle) * ring.radius });
+        positions.push({ x: cx + Math.cos(angle) * ring.radius, y: cy + Math.sin(angle) * ring.radius, s: ring.size });
       }
     }
 
@@ -195,12 +204,12 @@
       }
     }
 
-    const drawRadius = size / 2;
     for (let i = 0; i < Math.min(items.length, positions.length); i++) {
       const bmp = bitmaps[i];
       const pos = positions[i];
       if (!bmp) continue;
 
+      const drawRadius = pos.s / 2;
       ctx.save();
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, drawRadius, 0, Math.PI * 2);
@@ -208,9 +217,9 @@
       const sw = bmp.width;
       const sh = bmp.height;
       const s = Math.min(sw, sh);
-      ctx.drawImage(bmp, (sw - s) / 2, (sh - s) / 2, s, s, pos.x - drawRadius, pos.y - drawRadius, size, size);
+      ctx.drawImage(bmp, (sw - s) / 2, (sh - s) / 2, s, s, pos.x - drawRadius, pos.y - drawRadius, pos.s, pos.s);
       ctx.restore();
-      ctx.lineWidth = Math.max(1, Math.round(size * 0.02));
+      ctx.lineWidth = Math.max(1, Math.round(pos.s * 0.02));
       ctx.strokeStyle = 'rgba(124, 58, 237, 0.35)';
       ctx.beginPath();
       ctx.arc(pos.x, pos.y, drawRadius, 0, Math.PI * 2);
@@ -222,7 +231,7 @@
     // Center avatar with a decorative double ring.
     const selfRadius = centerR;
     ctx.beginPath();
-    ctx.arc(cx, cy, selfRadius + Math.round(size * 0.06), 0, Math.PI * 2);
+    ctx.arc(cx, cy, selfRadius + Math.round(bigSize * 0.06), 0, Math.PI * 2);
     ctx.fillStyle = '#7c3aed';
     ctx.fill();
     if (selfBlob) {

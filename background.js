@@ -122,7 +122,8 @@ async function onCollectDone(payload) {
       progress: {
         current: scores.length,
         max: scores.length,
-        message: `互动扫描完成：${scores.length} 位有互动记录`
+        message: `互动扫描完成：${scores.length} 位有互动记录（源：${bundle.sources.join('、') || '无'}` +
+          (bundle.failures.length ? `；不可用：${bundle.failures.join('、')}` : '') + '）'
       }
     });
   } catch (e) {

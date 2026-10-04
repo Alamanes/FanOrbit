@@ -9,6 +9,7 @@
     "https://twitter.com/*",
     "https://*.twimg.com/*",
     "https://search.yahoo.co.jp/*",
+    "https://www.bing.com/*",
     "https://api.fxtwitter.com/*"
   ],
   "background": { "service_worker": "background.js", "type": "module" },

@@ -7,7 +7,8 @@
     avatarSize: 96,
     bgColor: '#f5f3ff',
     titleText: '',
-    scanMode: 'fast'
+    scanMode: 'fast',
+    dualSize: true
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -19,6 +20,7 @@
     $('bgColor').value = c.bgColor;
     $('titleText').value = c.titleText || '';
     $('scanMode').value = c.scanMode || 'fast';
+    $('dualSize').checked = c.dualSize !== false;
 
     $('startBtn').addEventListener('click', start);
     $('genBtn').addEventListener('click', openGen);
@@ -37,7 +39,8 @@
       avatarSize: clampInt($('avatarSize').value, 40, 300, 96),
       bgColor: $('bgColor').value || '#f5f3ff',
       titleText: $('titleText').value.trim(),
-      scanMode: $('scanMode').value
+      scanMode: $('scanMode').value,
+      dualSize: $('dualSize').checked
     };
     await chrome.storage.local.set({ config });
     return config;
