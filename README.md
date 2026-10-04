@@ -1,12 +1,15 @@
 # FanOrbit
 
-将你的头像置于中心，粉丝按互动频率由内向外环绕，生成一张同心环「粉丝纪念头像墙」（JPG）。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Platform: Chrome Extension](https://img.shields.io/badge/Platform-Manifest%20V3-purple)
 
-**数据来源全部公开**：粉丝列表来自你已登录浏览器的 followers 页；互动数据来自公开数据源（Yahoo! Japan 实时搜索 + fxtwitter v2 API），**不需要 X API 密钥**，互动扫描环节也无需登录。
+将你的头像置于中心，粉丝按互动频率由内向外环绕，生成一张同心环「粉丝纪念头像墙」（JPG）。内三环放大突出互动最高的核心粉丝，无互动记录的粉丝随机散布外环。
+
+**数据来源全部公开**：粉丝列表来自你已登录浏览器的 followers 页；互动数据来自 fxtwitter / Yahoo! Japan 实时搜索 / Bing 三个免登录公开源，**不需要 X API 密钥**，互动扫描环节也无需登录。
 
 ---
 
-**English**: FanOrbit places your own avatar at the center and orbits your fans around it as concentric rings, ordered by interaction frequency from the innermost ring outward; fans without any interaction data are placed randomly among the outer rings. Fan collection approach referenced from [qiujiu-dev/XAvatarWall](https://github.com/qiujiu-dev/XAvatarWall); interaction scoring scheme inspired by [acnekot/NekoCircle](https://github.com/acnekot/NekoCircle) (reimplemented, no code copied: NekoCircle is AGPL-3.0).
+**English**: FanOrbit places your own avatar at the center and orbits your fans around it as concentric rings, ordered by interaction frequency from the innermost ring outward; fans without any interaction data are placed randomly among the outer rings, with the three inner rings enlarged for the core fans. Fan collection approach referenced from [qiujiu-dev/XAvatarWall](https://github.com/qiujiu-dev/XAvatarWall); interaction scoring scheme inspired by [acnekot/NekoCircle](https://github.com/acnekot/NekoCircle) (reimplemented, no code copied: NekoCircle is AGPL-3.0).
 
 ## 安装 Installation
 
@@ -62,6 +65,11 @@ FanOrbit/
 ├── downloader.js      头像下载（重试 + 缓存）
 ├── generator.html/js  同心环头像墙绘制与 JPG 输出
 ├── lib/scoring.js     互动评分
-├── lib/interaction.js Yahoo + fxtwitter 公开数据采集
+├── lib/interaction.js fxtwitter / Yahoo / Bing 公开数据采集
+├── lib/util.js        共享工具函数
 └── assets/            图标
 ```
+
+## 许可证 License
+
+本项目以 [MIT License](LICENSE) 开源。欢迎自由使用、修改与分发（含商用）；请保留版权声明。
