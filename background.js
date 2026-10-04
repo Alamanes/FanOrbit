@@ -1,7 +1,7 @@
 // FanOrbit service worker: orchestrates fan collection, public-data
 // interaction scanning, scoring, and opens the generator page.
 
-import { fetchInteractionBundle, fetchSelfAvatar } from './lib/interaction.js';
+import { fetchInteractionBundle, fetchSelfAvatar, fetchFollowerCount } from './lib/interaction.js';
 import { computeScores } from './lib/scoring.js';
 
 const TAB_URL = (name) => `https://x.com/${name}/followers`;
@@ -43,8 +43,15 @@ async function handleStart() {
   const { config } = await chrome.storage.local.get('config');
   if (!config || !config.username) return;
 
+  let expectedFollowers = null;
+  try {
+    expectedFollowers = await fetchFollowerCount(config.username);
+  } catch (e) {
+    // A count is a safety target, not a prerequisite for collection.
+  }
+
   await chrome.storage.local.set({
-    config: { ...config, active: true, stop: false },
+    config: { ...config, active: true, stop: false, expectedFollowers },
     progress: { current: 0, max: 0, message: '正在打开粉丝页…' }
   });
 
