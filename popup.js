@@ -9,7 +9,9 @@
     titleText: '',
     scanMode: 'fast',
     dualSize: true,
-    colorSort: false
+    colorSort: false,
+    shape: 'circle',
+    split3: false
   };
 
   document.addEventListener('DOMContentLoaded', async () => {
@@ -23,6 +25,9 @@
     $('scanMode').value = c.scanMode || 'fast';
     $('dualSize').checked = c.dualSize !== false;
     $('colorSort').checked = c.colorSort === true;
+    $('shape').value = c.shape === 'square' ? 'square' : 'circle';
+    // Fall back to the legacy split4 key only when split3 was never saved.
+    $('split3').checked = c.split3 !== undefined ? c.split3 === true : c.split4 === true;
 
     $('startBtn').addEventListener('click', start);
     $('genBtn').addEventListener('click', openGen);
@@ -43,7 +48,9 @@
       titleText: $('titleText').value.trim(),
       scanMode: $('scanMode').value,
       dualSize: $('dualSize').checked,
-      colorSort: $('colorSort').checked
+      colorSort: $('colorSort').checked,
+      shape: $('shape').value === 'square' ? 'square' : 'circle',
+      split3: $('split3').checked
     };
     await chrome.storage.local.set({ config });
     return config;

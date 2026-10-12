@@ -23,6 +23,11 @@
     .progressWrap { height: 8px; width: 420px; max-width: 100%; border-radius: 4px;
       background: #e5e1f5; overflow: hidden; margin: 12px 0; }
     .progressFill { height: 100%; width: 0; background: #7c3aed; transition: width .3s; }
+    #genControls { margin: 12px 0; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    #genControls label { display: inline-flex; gap: 6px; align-items: center; color: #41456b; }
+    #genControls select { font: inherit; padding: 4px 8px; border: 1px solid #cfc9ee; border-radius: 6px;
+      background: #fff; color: inherit; }
+    #genControls input[type="checkbox"] { width: auto; }
   </style>
 </head>
 <body>
@@ -30,6 +35,15 @@
   <div class="progressWrap"><div class="progressFill" id="fill"></div></div>
   <div id="status">正在读取数据…</div>
   <div id="meta"></div>
+  <div id="genControls">
+    <label>布局
+      <select id="shapeSel">
+        <option value="circle">圆形（同心环）</option>
+        <option value="square">方形（中心 2×2）</option>
+      </select>
+    </label>
+    <label><input id="split3Chk" type="checkbox" /> 3分图（竖向裁成 3 条，避开头像）</label>
+  </div>
   <div style="margin: 16px 0;">
     <img id="preview" alt="FanOrbit 头像墙预览" />
   </div>
